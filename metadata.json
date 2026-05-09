@@ -1,0 +1,6 @@
+{
+  "name": "VoiceCoach Pro",
+  "description": "A high-contrast fitness timer with smart voice guidance and custom workout plans.",
+  "requestFramePermissions": ["screen-wake-lock"],
+  "majorCapabilities": ["Web Speech API", "Screen Wake Lock API"]
+}
