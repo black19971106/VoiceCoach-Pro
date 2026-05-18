@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Pause, Square, ChevronLeft, Volume2, VolumeX, Sun, Moon } from 'lucide-react';
-import { WorkoutPlan, CurrentState } from '../App';
+import { Play, Pause, Square, ChevronLeft, Volume2, VolumeX, Sun, Moon, Clock } from 'lucide-react';
+import { WorkoutPlan } from '../App';
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer';
 import { useWakeLock } from '../hooks/useWakeLock';
+import { audioService } from '../services/audioService';
 
 interface PlayerProps {
   plan: WorkoutPlan;
@@ -14,7 +15,15 @@ export function WorkoutPlayer({ plan, onExit }: PlayerProps) {
   const { state, start, pause, reset, totalProgress, totalSecondsRemaining } = useWorkoutTimer(plan);
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
   const [isMuted, setIsMuted] = useState(false);
+  const [isTicking, setIsTicking] = useState(false);
   const [isDark, setIsDark] = useState(plan.theme === 'dark');
+
+  // Handle ticking sound
+  useEffect(() => {
+    if (isTicking && state.status === 'running' && state.timeLeft > 0) {
+      audioService.playTick();
+    }
+  }, [state.timeLeft, state.status, isTicking]);
 
   const currentPhase = plan.phases[state.phaseIndex];
   const currentItem = currentPhase?.items[state.itemIndex];
@@ -75,6 +84,9 @@ export function WorkoutPlayer({ plan, onExit }: PlayerProps) {
           <div className="hidden sm:block text-xs font-black bg-black/10 px-4 py-2 rounded-full border border-white/10 uppercase tracking-widest">
             Total {formatTime(totalSecondsRemaining)}
           </div>
+          <button onClick={() => setIsTicking(!isTicking)} className={`p-2 rounded-full backdrop-blur-sm border border-white/20 transition-all ${isTicking ? 'bg-white/20 text-white' : 'bg-black/10 text-white/50'}`}>
+            <Clock size={24} />
+          </button>
           <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-full bg-black/10 backdrop-blur-sm border border-white/20 hover:bg-black/20 transition-colors">
             {isDark ? <Sun size={24} /> : <Moon size={24} />}
           </button>
